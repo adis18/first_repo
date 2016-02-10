@@ -19,6 +19,8 @@ class LSA:
         self.counter=counter
         self.isDelayedFB=isDelayedFB
         
+        
+        
     def printLSA(self):
         
         print '[' + str(self.LSID) + ',' + str(self.AR) + ',' + str(self.seqNum) + ',' + str(self.linkID) + ',' + str(self.isOriginatedByAttacker)  +']'
@@ -38,6 +40,7 @@ class Router:
         self.isDelayedFB = False
         self.calcRT_flag = False
         self.delayedFB = []
+        self.lookup_policy = 0
         
         
     def updateTimer(self):
@@ -95,14 +98,27 @@ class Router:
                     found=True
                     break
             if found:
-                #database lookup
-                index=0
+                #default database lookup
+                index = 0
+                delta=1
+                if  self.lookup_policy==1:
+                    index = len(self.DB)-1
+                    delta=-1
                 foundLSA=self.DB[0]
-                for lsa in self.DB: #TODO: arbitrary order
-                    if lsa.LSID==v:
-                        foundLSA=lsa
+                for m in self.DB:
+                    currlsa = self.DB[index]
+                    if currlsa.LSID==v:
+                        foundLSA=currlsa
                         break
-                    index+=1
+                    index = index + delta
+                
+#                 index=0
+#                 foundLSA=self.DB[0]                              
+#                 for lsa in self.DB: #TODO: arbitrary order
+#                     if lsa.LSID==v:
+#                         foundLSA=lsa
+#                         break
+#                     index+=1
                 if foundLSA.type=='routerLSA' and foundLSA.LSID==v:
                     w = foundLSA.linkID
                     w_index=0
@@ -260,7 +276,7 @@ loop_bound=15
 
 
 
-def runModel(x):
+def runModel(x,y,z,w):
     
     r0 = Router(0)
     r1 = Router(1)
@@ -284,10 +300,15 @@ def runModel(x):
         if k==0:
             #modelAttackerBehavior(x,y)
             #send msg with abstract seqNum
-            lsa = LSA(0,1,'routerLSA',2,2,x,1,2,True,False,0,False)
-            r1.queue.append(lsa)
+            #( src, dest, msg_type, LSID, AR, seqNum, linkID, metric, isOriginatedByAttacker, isMarked, counter, isDelayedFB):
+            #lsa = LSA(0,1,'routerLSA',2,2,x,1,2,True,False,0,False)
+            #r1.queue.append(lsa)
             #lsa1 = LSA(0,1,'routerLSA',2,2,y,1,2,True,False,0,False)
             #r1.queue.append(lsa1)
+            
+            lsa = LSA(0,1,'routerLSA',y,z,x,w,2,True,False,0,False)
+            r1.queue.append(lsa)
+            
         
         r0.updateTimer()
         r1.updateTimer()
@@ -317,9 +338,11 @@ def runModel(x):
 #runModel(x)
 
 x = BitVec("x", 4)
-#y = BitVec("y", 4)
-#mc_fuzz(lambda: runModel(x,y), [x,y], [1,0])
-mc_fuzz(lambda: runModel(x), [x], [0])
-
+y = BitVec("y", 4)
+z = BitVec("z", 4)
+w = BitVec("w", 4)
+#mc_fuzz(lambda: runModel(x,y), [x,y], [0,0])
+#mc_fuzz(lambda: runModel(x), [x], [0])
+mc_fuzz(lambda: runModel(x,y,z,w), [x,y,z,w], [0,0,0,0])
 
 #runModel(7,2)    
