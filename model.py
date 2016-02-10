@@ -1,5 +1,5 @@
 #import copy
-from mc import *
+#from mc import *
 
 #TODO: model MaxSequenceNumber and MaxAge
 
@@ -122,12 +122,25 @@ class Router:
                 if foundLSA.type=='routerLSA' and foundLSA.LSID==v:
                     w = foundLSA.linkID
                     w_index=0
-                    for lsa in self.DB:
+                    delta=1
+                    if self.lookup_policy==1:
+                        w_index = len(self.DB)-1
+                        delta=-1
+                    for m in self.DB:
+                        lsa = self.DB[w_index]
                         if lsa.LSID==w and lsa.linkID==v and lsa.type=='routerLSA':
                             foundLSA.isMarked=True
                             self.DB[w_index].isMarked=True
                             reachables[w]=True
-                        w_index+=1
+                        w_index = w_index + delta
+                        
+#                     w_index=0
+#                     for lsa in self.DB:
+#                         if lsa.LSID==w and lsa.linkID==v and lsa.type=='routerLSA':
+#                             foundLSA.isMarked=True
+#                             self.DB[w_index].isMarked=True
+#                             reachables[w]=True
+#                         w_index+=1
                             
             for lsa in self.DB:
                 if lsa.type=='summaryLSA' and reachables[lsa.AR]:
@@ -282,6 +295,10 @@ def runModel(x,y,z,w):
     r1 = Router(1)
     r2 = Router(2)
     
+    r1.lookup_policy = 1
+    r2.lookup_policy = 1
+    
+    
     #init_DBs()
     lsa1 = LSA('NA','NA','routerLSA',1,1,0,2,1,False,True,0,False)
     lsa2 = LSA('NA','NA','routerLSA',2,2,0,1,1,False,True,0,False)
@@ -306,9 +323,11 @@ def runModel(x,y,z,w):
             #lsa1 = LSA(0,1,'routerLSA',2,2,y,1,2,True,False,0,False)
             #r1.queue.append(lsa1)
             
-            lsa = LSA(0,1,'routerLSA',y,z,x,w,2,True,False,0,False)
+            #lsa = LSA(0,1,'routerLSA',y,z,x,w,2,True,False,0,False)
+            #r1.queue.append(lsa)
+            lsa = LSA(0,1,'routerLSA',2,0,1,1,2,True,False,0,False)
             r1.queue.append(lsa)
-            
+            #src, dest, msg_type, LSID, AR, seqNum, linkID, metric, isOriginatedByAttacker, isMarked, counter, isDelayedFB
         
         r0.updateTimer()
         r1.updateTimer()
@@ -333,16 +352,16 @@ def runModel(x,y,z,w):
     return
 
 
-
+runModel(0,0,0,0)
 
 #runModel(x)
 
-x = BitVec("x", 4)
-y = BitVec("y", 4)
-z = BitVec("z", 4)
-w = BitVec("w", 4)
-#mc_fuzz(lambda: runModel(x,y), [x,y], [0,0])
-#mc_fuzz(lambda: runModel(x), [x], [0])
-mc_fuzz(lambda: runModel(x,y,z,w), [x,y,z,w], [0,0,0,0])
+# x = BitVec("x", 4)
+# y = BitVec("y", 4)
+# z = BitVec("z", 4)
+# w = BitVec("w", 4)
+# #mc_fuzz(lambda: runModel(x,y), [x,y], [0,0])
+# #mc_fuzz(lambda: runModel(x), [x], [0])
+# mc_fuzz(lambda: runModel(x,y,z,w), [x,y,z,w], [0,0,0,0])
 
 #runModel(7,2)    
