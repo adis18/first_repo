@@ -1,5 +1,5 @@
 #import copy
-#from mc import *
+from mc import *
 
 #TODO: model MaxSequenceNumber and MaxAge
 
@@ -132,6 +132,7 @@ class Router:
                             foundLSA.isMarked=True
                             self.DB[w_index].isMarked=True
                             reachables[w]=True
+                            break
                         w_index = w_index + delta
                         
 #                     w_index=0
