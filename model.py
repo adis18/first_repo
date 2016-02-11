@@ -1,5 +1,5 @@
 #import copy
-from mc import *
+#from mc import *
 
 #TODO: model MaxSequenceNumber and MaxAge
 
@@ -112,13 +112,7 @@ class Router:
                         break
                     index = index + delta
                 
-#                 index=0
-#                 foundLSA=self.DB[0]                              
-#                 for lsa in self.DB: #TODO: arbitrary order
-#                     if lsa.LSID==v:
-#                         foundLSA=lsa
-#                         break
-#                     index+=1
+
                 if foundLSA.type=='routerLSA' and foundLSA.LSID==v:
                     w = foundLSA.linkID
                     w_index=0
@@ -135,13 +129,7 @@ class Router:
                             break
                         w_index = w_index + delta
                         
-#                     w_index=0
-#                     for lsa in self.DB:
-#                         if lsa.LSID==w and lsa.linkID==v and lsa.type=='routerLSA':
-#                             foundLSA.isMarked=True
-#                             self.DB[w_index].isMarked=True
-#                             reachables[w]=True
-#                         w_index+=1
+
                             
             for lsa in self.DB:
                 if lsa.type=='summaryLSA' and reachables[lsa.AR]:
@@ -185,13 +173,7 @@ class Router:
             if m.AR == self.ID : #self-originated
                 self.timer = MINLSINTERVAL
                 #generate fight-back LSA
-                #FB = copy.deepcopy(m)
                 FBM = LSA(m.src, m.dest, m.type, m.LSID, m.AR, (m.seqNum)+1, m.linkID, m.metric, False, False, 0, True)
-                #FB=m 
-                #FB.seqNum = m.seqNum + 1;
-                #FB.isOriginatedByAttacker = False; 
-                #FB.isDelayedFB = True; 
-                #setDBEntry(idNum, i ,  FB );
                 self.DB[index]=FBM
                 
                 
@@ -283,9 +265,7 @@ routers_num = 3
 attacker = 0
 min_counter=10
 loop_bound=15
-#timers = [0]*routers_num
-#calcRT_flag = [False]*routers_num
-#isDelayedFB = [False]*routers_num
+
 
 
 
@@ -296,8 +276,8 @@ def runModel(x,y,z,w):
     r1 = Router(1)
     r2 = Router(2)
     
-    r1.lookup_policy = 1
-    r2.lookup_policy = 1
+    #r1.lookup_policy = 1
+    #r2.lookup_policy = 1
     
     
     #init_DBs()
@@ -315,20 +295,31 @@ def runModel(x,y,z,w):
         r1.processRouterMessage(r0,r1,r2)
         r2.processRouterMessage(r0,r1,r2)
         
-        if k==0:
-            #modelAttackerBehavior(x,y)
-            #send msg with abstract seqNum
-            #( src, dest, msg_type, LSID, AR, seqNum, linkID, metric, isOriginatedByAttacker, isMarked, counter, isDelayedFB):
-            #lsa = LSA(0,1,'routerLSA',2,2,x,1,2,True,False,0,False)
-            #r1.queue.append(lsa)
-            #lsa1 = LSA(0,1,'routerLSA',2,2,y,1,2,True,False,0,False)
-            #r1.queue.append(lsa1)
-            
-            #lsa = LSA(0,1,'routerLSA',y,z,x,w,2,True,False,0,False)
-            #r1.queue.append(lsa)
-            lsa = LSA(0,1,'routerLSA',2,0,1,1,2,True,False,0,False)
-            r1.queue.append(lsa)
+        #periodic injection
+        if k<12:
+            seq = k+1
             #src, dest, msg_type, LSID, AR, seqNum, linkID, metric, isOriginatedByAttacker, isMarked, counter, isDelayedFB
+            lsa1 = LSA(0,1,'routerLSA',2,2,seq,1,2,True,False,0,False)
+            r1.queue.append(lsa1)
+        
+        #-------------------------------------------------------------------------------------------------------------------
+        
+#         if k==0:
+#             #modelAttackerBehavior(x,y)
+#             #send msg with abstract seqNum
+#             #( src, dest, msg_type, LSID, AR, seqNum, linkID, metric, isOriginatedByAttacker, isMarked, counter, isDelayedFB):
+#             #lsa = LSA(0,1,'routerLSA',2,2,x,1,2,True,False,0,False)
+#             #r1.queue.append(lsa)
+#             #lsa1 = LSA(0,1,'routerLSA',2,2,y,1,2,True,False,0,False)
+#             #r1.queue.append(lsa1)
+#             
+#             #lsa = LSA(0,1,'routerLSA',y,z,x,w,2,True,False,0,False)
+#             #r1.queue.append(lsa)
+#             
+#             #A msg with LSID != AR --result depends on the lookup policy 
+#             lsa = LSA(0,1,'routerLSA',2,0,1,1,2,True,False,0,False)
+#             r1.queue.append(lsa)
+#             #src, dest, msg_type, LSID, AR, seqNum, linkID, metric, isOriginatedByAttacker, isMarked, counter, isDelayedFB
         
         r0.updateTimer()
         r1.updateTimer()
